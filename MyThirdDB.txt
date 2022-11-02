@@ -1,0 +1,243 @@
+--CREATE LIST
+CREATE DATABASE account
+
+CREATE TABLE banks
+(
+	banks_id int GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL,
+	bank_name varchar(64) NOT NULL, 
+	
+	CONSTRAINT PK_banks_id PRIMARY KEY (banks_id)
+);
+
+CREATE TABLE employees 
+(
+	employee_id int GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL,
+	first_name varchar(32) NOT NULL, 
+	last_name varchar(32) NOT NULL,
+	age int CONSTRAINT CHK_age CHECK (age BETWEEN 18 AND 100) NOT NULL, 
+	bank_account int DEFAULT 0, 
+	
+	CONSTRAINT PK_employee_id PRIMARY KEY (employee_id) 
+); 
+
+CREATE TABLE companies
+(
+	company_id int GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL,
+	company_name varchar(256) NOT NULL, 
+	employees_num int NOT NULL, 
+	
+	CONSTRAINT PK_company_id PRIMARY KEY (company_id)
+);
+
+CREATE TABLE countries
+(
+	country_id int GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL,
+	country varchar(64) NOT NULL, 
+	
+	CONSTRAINT PK_country_id PRIMARY KEY (country_id)
+);
+
+CREATE TABLE employee_companies 
+(
+	employee_id int NOT NULL, 
+	company_id int NOT NULL, 
+	
+	CONSTRAINT FK_employee_id FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
+	CONSTRAINT FK_company_id FOREIGN KEY (company_id) REFERENCES companies(company_id)
+);
+
+CREATE TABLE comp_country 
+(
+	company_id int NOT NULL, 
+	country_id int NOT NULL, 
+	
+	CONSTRAINT FK_company_id FOREIGN KEY (company_id) REFERENCES companies(company_id), 
+	CONSTRAINT FK_country_id FOREIGN KEY (country_id) REFERENCES countries(country_id)
+); 
+
+CREATE TABLE emp_country 
+(
+	employee_id int NOT NULL, 
+	country_id int NOT NULL, 
+	
+	CONSTRAINT FK_employee_id FOREIGN KEY (employee_id) REFERENCES employees(employee_id), 
+	CONSTRAINT FK_country_id FOREIGN KEY (country_id) REFERENCES countries(country_id)
+);
+
+CREATE TABLE employee_money
+(
+	employee_id int NOT NULL,
+	balance int DEFAULT 0,
+	banks_id int,  
+
+	CONSTRAINT FK_employee_id FOREIGN KEY (employee_id) REFERENCES employees(employee_id), 
+	CONSTRAINT FK_person_banks_id FOREIGN KEY (banks_id) REFERENCES banks(banks_id)
+);
+--..........
+
+
+
+--INSERT LIST
+INSERT INTO employees (first_name, last_name, age, bank_account)
+VALUES 
+('Danil', 'Liakhovets', 19, 1), 
+('Dmitriy', 'Mitrika', 37, 1),
+('Tanya', 'Lasotti', 36, 0),
+('John', 'Marsten', 45, 0),
+('Molly', 'Forbson', 24, 1),
+('Boris', 'Kostkovich', 65, 0)
+RETURNING *;
+
+INSERT INTO banks (bank_name)
+VALUES 
+('Bank of America'), 
+('Wells Fargo'), 
+('Citigroup'),
+('Goldman Sachs')
+RETURNING *;
+
+INSERT INTO employee_money 
+VALUES 
+(1, 2653, 2), 
+(2, 800, 1),
+(5, 458, 1)
+RETURNING *;
+
+INSERT INTO employee_money 
+VALUES 
+(3, 1467 ),
+(4, 205 ),
+(6, 2254 )
+RETURNING *;
+
+INSERT INTO companies (company_name, employees_num)
+VALUES 
+('Plaxonic Technologies', 452),
+('Geomotiv', 890),
+('Cyber Infrastructure Inc', 1200),
+('CodeBright', 704),
+('PixelCrayons', 98),
+('Attract Group', 167)
+RETURNING *;
+
+INSERT INTO employee_companies 
+VALUES 
+(1, 3), 
+(2, 1),
+(3, 1),
+(4, 4),
+(5, 6),
+(6, 2)
+RETURNING *;
+
+INSERT INTO countries (country)
+VALUES 
+('Albania'),
+('Canada'),
+('France'),
+('Germany'),
+('Ukraine'),
+('USA')
+RETURNING *;
+
+INSERT INTO comp_country 
+VALUES 
+(1, 6), 
+(2, 6),
+(3, 6),
+(4, 6),
+(5, 6),
+(6, 6)
+RETURNING *;
+
+INSERT INTO emp_country
+VALUES 
+(1, 5),
+(2, 5),
+(3, 2),
+(4, 3),
+(5, 4),
+(6, 1)
+RETURNING *;
+--..........
+
+
+
+-- VIEW LIST 
+CREATE OR REPLACE VIEW employee_bank_money AS
+SELECT first_name, last_name, balance, bank_account, bank_name
+FROM employee_money
+JOIN employees USING (employee_id)
+JOIN banks USING (banks_id); 
+
+
+CREATE OR REPLACE VIEW employees_companies AS 
+SELECT first_name, last_name, age, country, bank_account, company_name, employees_num 
+FROM employee_companies
+--create connection with employee countries 
+JOIN emp_country USING (employee_id)
+JOIN countries USING (country_id)
+--create connection with employees and companys
+JOIN companies USING (company_id)
+JOIN employees USING (employee_id) 
+--..........
+
+
+
+-- FUNCTION LIST
+	--nothing 
+--..........
+
+
+
+--SELECT LIST
+SELECT * FROM companies; 
+SELECT * FROM employees;
+SELECT * FROM countries;
+SELECT * FROM banks;
+
+SELECT CONCAT (first_name,'  ', last_name), balance, bank_account, bank_name
+FROM employee_money
+JOIN employees USING (employee_id)
+JOIN banks USING (banks_id)
+
+
+SELECT CONCAT (first_name,'  ', last_name), company_name
+FROM employee_companies
+JOIN companies USING (company_id)
+JOIN employees USING (employee_id);
+
+SELECT company_name, country
+FROM comp_country
+JOIN companies USING (company_id)
+JOIN countries USING (country_id);
+
+
+SELECT CONCAT (first_name,'  ', last_name), age, bank_account, country 
+FROM emp_country 
+JOIN employees USING (employee_id)
+JOIN countries USING (country_id);
+
+--VIEW SELECT 
+SELECT * FROM employee_bank_money
+SELECT * FROM employees_companies
+--..........
+
+
+
+--DROP LIST 
+DROP DATABASE IF EXISTS account
+
+DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS companies;
+DROP TABLE IF EXISTS countries;
+DROP TABLE IF EXISTS banks;
+
+DROP TABLE IF EXISTS emp_country;
+DROP TABLE IF EXISTS employee_companies;
+DROP TABLE IF EXISTS employee_money;
+DROP TABLE IF EXISTS comp_country;
+
+DROP VIEW IF EXISTS employee_bank_money;
+DROP VIEW IF EXISTS employees_companies;
+--..........

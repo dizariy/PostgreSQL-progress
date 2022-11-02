@@ -1,0 +1,53 @@
+CREATE DATABASE IF NOT EXISTS many_to_many
+
+CREATE TABLE book 
+(
+	book_id int PRIMARY KEY, 
+	title varchar (42) NOT NULL,
+	isbn int NOT NULL 
+); 
+
+CREATE TABLE author 
+(
+	author_id int PRIMARY KEY, 
+	first_name varchar(15) NOT NULL, 
+	last_name varchar(15) NOT NULL,
+	reiting float4 NOT NULL 
+); 
+
+CREATE TABLE colection 
+(
+	book_id int REFERENCES book(book_id),
+	author_id int REFERENCES author(author_id)
+); 
+
+
+INSERT INTO book 
+VALUES 
+(1, 'Math', 142345),
+(2, 'Python Logic', 5473429),
+(3, 'Data Base', 4229167),
+(4, 'Cteativity', 24242165);
+
+INSERT INTO author
+VALUES 
+(1,'Matt', 'Garison', 4.5),
+(2,'Stive', 'Hertings', 3.7),
+(3,'Jacy', 'James', 5.0);
+
+INSERT INTO colection
+VALUES 
+(1, 1),
+(2, 2),
+(2, 3),
+(3, 2),
+(4, 1),
+(4, 2),
+(4, 3)
+
+SELECT * FROM book 
+SELECT * FROM author
+
+SELECT * FROM colection
+JOIN book USING (book_id),
+JOIN author USING (author_id)

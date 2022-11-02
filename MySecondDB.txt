@@ -1,0 +1,56 @@
+CREATE DATABASE IF NOT EXISTS comp_emp
+
+CREATE TABLE IF NOT EXISTS companys
+(
+	company_id int GENERATED ALWAYS AS IDENTITY (START WITH 1 MAXVALUE 100 INCREMENT BY 1) NOT NULL,
+	company_name varchar(64) NOT NULL,
+	country varchar(25) NOT NULL,
+	contact text, 
+	
+	CONSTRAINT pk_company_id PRIMARY KEY (company_id )
+);
+
+
+CREATE TABLE IF NOT EXISTS employees
+(
+	employee_id int GENERATED ALWAYS AS IDENTITY (START WITH 1 MAXVALUE 100 INCREMENT BY 1) NOT NULL, 
+	first_name varchar(32) NOT NULL,
+	last_name varchar(32) NOT NULL,
+	rating real NOT NULL,
+	country varchar(25) NOT NULL,
+	company_id int NOT NULL,
+	
+	CONSTRAINT pk_employee_id PRIMARY KEY (employee_id),
+	CONSTRAINT fk_company_id  FOREIGN KEY (company_id) REFERENCES companys(company_id)
+); 
+
+INSERT INTO companys (company_name, country) 
+VALUES 
+('SONY','Japan'),
+('Project-RED','Slovakia'), 
+('One-Man studio', 'USA')
+RETURNING * ;
+
+INSERT INTO employees (first_name, last_name, rating, country, company_id)
+VALUES 
+('Danil', 'Liakhovets', 5.0, 'Ukraine', 1),
+('Rose', 'Kristan', 3.6, 'USA', 1),
+('Debby', 'Monostra', 4.3, 'UK', 2),
+('Andrew', 'Bordes', 4.8, 'USA', 2),
+('Shinso', 'Arigany', 3.9, 'Japan', 1),
+('Kura', 'Satora', 5.0, 'China', 3) 
+RETURNING *; 
+
+SELECT * 
+INTO best_employees 
+FROM employees
+WHERE rating > 4;
+
+
+SELECT * FROM companys;
+SELECT * FROM employees; 
+SELECT * FROM best_employees;
+
+SELECT country FROM employees
+INTERSECT 
+SELECT country FROM companys;
